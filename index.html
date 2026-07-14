@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SINAPSE - Conectando a Inteligência</title>
+
+    <!-- Tailwind CSS para estilização moderna e rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Importação de Ícones Modernos (Lucide Icons) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Configuração de fontes premium e variáveis da paleta de cores -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="sources/logo3.png">
+    <style>
+        :root {
+            /* Paleta oficial SINAPSE — inalterada */
+            --bg-sand: #f5f2eb;             /* Fundo Areia Claro */
+            --brand-teal: #048768;          /* Verde Teal Principal */
+            --brand-sage: #8fb3a2;          /* Verde Sage de Apoio */
+            --brand-ochre: #c8762d;         /* Ouro/Ocre de Contraste */
+            --brand-terracotta: #cb5329;    /* Terracota para Ações de Alerta/Atenção */
+            --brand-dark: #132624;          /* Fundo Escuro para Seções */
+            --text-main: #132624;
+            --text-muted: #536461;
+            --border-soft: #e2dcce;
+
+            /* Tokens derivados — sistema de design para extensões futuras */
+            --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+            --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+
+            --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-xl: 32px;
+
+            --shadow-sm: 0 1px 2px rgba(19,38,36,0.05);
+            --shadow-md: 0 8px 24px -8px rgba(19,38,36,0.14);
+            --shadow-lg: 0 20px 48px -12px rgba(19,38,36,0.20);
+            --shadow-glow-teal: 0 0 32px rgba(4,135,104,0.25);
+
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --dur-fast: 150ms; --dur-base: 300ms; --dur-slow: 600ms;
+
+            --z-bg: 0; --z-base: 1; --z-sticky: 40; --z-header: 50; --z-dropdown: 60;
+
+            --teal-08: rgba(4,135,104,0.08);
+            --teal-14: rgba(4,135,104,0.14);
+            --sage-30: rgba(143,179,162,0.30);
+            --ochre-20: rgba(200,118,45,0.20);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Animações e Transições Fluídas */
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Efeito de Vidro Fosco Adaptado para Cores Claras */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-soft);
+        }
+
+        /* Estilização personalizada para scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-sand); }
+        ::-webkit-scrollbar-thumb { background: var(--brand-sage); border-radius: 999px; }
+
+        /* Active indicators (cor apenas — a barra deslizante fica no #navIndicator) */
+        .active-tab { color: var(--brand-teal) !important; }
+
+        /* ============================================================
+           CAMADA 0 — Motor de fundo "Sinapses" (ver script SynapseNetwork)
+           ============================================================ */
+        #synapse-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: var(--z-bg);
+            pointer-events: none;
+            display: block;
+        }
+        header, main, footer { position: relative; z-index: var(--z-base); }
+
+        /* ============================================================
+           Acessibilidade — foco visível e movimento reduzido
+           ============================================================ */
+        :focus-visible {
+            outline: 2px solid var(--brand-teal);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        button, .nav-btn { -webkit-tap-highlight-color: transparent; }
+        button:active { transform: scale(0.98); }
+
+        h1, h2, h3 { text-wrap: balance; }
+        .lede { text-wrap: pretty; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
+            .reveal { opacity: 1 !important; transform: none !important; }
+        }
+
+        /* ============================================================
+           Sistema de revelação (scroll / troca de aba)
+           ============================================================ */
+        .reveal {
+            opacity: 0;
+            transform: translateY(22px);
+            transition: opacity var(--dur-slow) var(--ease-out-expo),
+                        transform var(--dur-slow) var(--ease-out-expo);
+            transition-delay: var(--reveal-delay, 0ms);
+        }
+        .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+        /* Brilho ambiente atrás do título hero — ecoa a rede de sinapses */
+        .hero-glow {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 680px;
+            height: 440px;
+            max-width: 130vw;
+            background: radial-gradient(closest-side, var(--teal-14), transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Indicador deslizante de navegação */
+        #desktopNav { position: relative; }
+        #navIndicator {
+            position: absolute;
+            bottom: -1px;
+            height: 2px;
+            left: 0; width: 0;
+            background: var(--brand-teal);
+            border-radius: 999px;
+            transition: left var(--dur-base) var(--ease-out-expo), width var(--dur-base) var(--ease-out-expo);
+        }
+
+        /* Menu mobile */
+        #mobileMenuBtn i { transition: transform var(--dur-base) var(--ease-out-expo); }
+        #mobileMenuBtn[aria-expanded="true"] i { transform: rotate(90deg); }
+
+        /* Cartões — leve elevação intencional no hover (aplicado junto às classes utilitárias existentes) */
+        .panel-hover { transition: transform var(--dur-base) var(--ease-out-expo), box-shadow var(--dur-base) var(--ease-out-expo); }
+        .panel-hover:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+        /* Barras de progresso do dashboard — animadas via JS a cada visita à aba */
+        .stat-bar-fill { transition: width 1s var(--ease-out-expo); }
+
+        /* Tooltip do gráfico semanal */
+        .chart-bar { position: relative; cursor: default; }
+        .chart-tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: var(--brand-dark);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--dur-fast) ease, transform var(--dur-fast) ease;
+            z-index: var(--z-sticky);
+        }
+        .chart-bar:hover .chart-tooltip,
+        .chart-bar:focus-visible .chart-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Entrada das mensagens do chat */
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .msg-in { animation: msgIn var(--dur-base) var(--ease-out-expo) both; }
+
+        .typing-dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: var(--brand-sage);
+            display: inline-block;
+            animation: dotPulse 1.2s ease-in-out infinite;
+        }
+        @keyframes dotPulse {
+            0%, 80%, 100% { opacity: .25; transform: translateY(0); }
+            40% { opacity: 1; transform: translateY(-3px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- Fundo dinâmico de sinapses — desenhado em canvas, comportamento em SynapseNetwork -->
+    <canvas id="synapse-canvas" aria-hidden="true" data-density="0.00009" data-max-distance="150" data-speed="0.12"></canvas>
+
+    <header class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-[#e2dcce] smooth-transition">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+
+            <!-- Logo Oficial "sources/logo3.png" -->
+            <a href="#" onclick="switchTab('inicio'); return false;" class="flex items-center gap-3 text-2xl font-extrabold tracking-tight hover:opacity-90 smooth-transition">
+                <img src="sources/logo3.png" alt="SINAPSE Logo" class="h-10 w-auto object-contain">
+                <span class="tracking-widest font-extrabold" style="color: var(--brand-dark)">SINAPSE</span>
+            </a>
+
+            <!-- Menu de Navegação Central -->
+            <nav id="desktopNav" class="hidden md:flex items-center gap-10">
+                <a href="#" onclick="switchTab('inicio'); return false;" id="nav-inicio" class="nav-btn font-semibold text-sm pb-1 smooth-transition active-tab" style="color: var(--brand-teal)">Início</a>
+                <a href="#" onclick="switchTab('dashboard'); return false;" id="nav-dashboard" class="nav-btn font-semibold text-sm pb-1 smooth-transition" style="color: var(--text-muted)">Dashboard</a>
+                <a href="#" onclick="switchTab('assistencia'); return false;" id="nav-assistencia" class="nav-btn font-semibold text-sm pb-1 smooth-transition" style="color: var(--text-muted)">Assistência</a>
+                <span id="navIndicator" aria-hidden="true"></span>
+            </nav>
+
+            <!-- Menu de Usuário, Login e Menu Mobile -->
+            <div class="relative flex items-center gap-3">
+                <!-- Botão de menu mobile -->
+                <button id="mobileMenuBtn" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-[#e2dcce] bg-white smooth-transition" aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="mobileMenu">
+                    <i data-lucide="menu" class="w-5 h-5" style="color: var(--brand-dark)"></i>
+                </button>
+
+                <button id="loginTrigger" onclick="handleLoginClick()" class="flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#e2dcce] bg-white hover:bg-[#faf9f6] text-sm font-semibold smooth-transition shadow-sm">
+                    <span style="color: var(--text-muted)" class="hidden sm:inline">Login</span>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white" style="background-color: var(--brand-teal)">
+                        <i data-lucide="user" class="w-4 h-4"></i>
+                    </div>
+                </button>
+
+                <!-- Menu Dropdown Interativo (Desce ao clicar no Login) -->
+                <div id="loginDropdown" class="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-[#e2dcce] bg-white p-2.5 shadow-xl hidden flex-col gap-1 z-50 opacity-0 transform translate-y-[-10px] smooth-transition">
+                    <div class="px-4 py-3 border-b border-[#f0ebe0] mb-1.5">
+                        <p class="text-xs font-semibold tracking-wider uppercase opacity-60" style="color: var(--brand-ochre)">Acesso Rápido</p>
+                        <p class="text-sm font-bold truncate" style="color: var(--brand-dark)">Conecte seu perfil</p>
+                    </div>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-dark)">
+                        <i data-lucide="user-cog" class="w-4 h-4" style="color: var(--brand-teal)"></i>
+                        Minha Conta
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-dark)">
+                        <i data-lucide="settings" class="w-4 h-4" style="color: var(--brand-teal)"></i>
+                        Configurações
+                    </a>
+                    <a href="login.html" id="loginMenuLink" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-teal)">
+                        <i data-lucide="log-in" class="w-4 h-4" style="color: var(--brand-teal)"></i>
+                        Fazer Login
+                    </a>
+                    <div class="h-[1px] bg-[#f0ebe0] my-1.5"></div>
+                    <a href="#logout" id="logoutLink" class="hidden flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-red-50 smooth-transition" style="color: var(--brand-terracotta)">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        Sair
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Painel de navegação mobile -->
+        <div id="mobileMenu" class="md:hidden hidden absolute top-full left-0 w-full bg-white border-b border-[#e2dcce] shadow-xl flex-col p-3 gap-1">
+            <a href="#" onclick="switchTab('inicio'); return false;" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Início</a>
+            <a href="#" onclick="switchTab('dashboard'); return false;" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Dashboard</a>
+            <a href="#" onclick="switchTab('assistencia'); return false;" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Assistência</a>
+        </div>
+    </header>
+
+    <main class="flex-1 pt-28 pb-16 px-6 max-w-7xl mx-auto w-full flex flex-col justify-center">
+
+        <!-- ================= ABAS: INÍCIO ================= -->
+        <section id="tab-inicio" class="tab-content flex flex-col items-center">
+
+            <!-- Hero / Branding Segment -->
+            <div class="relative text-center max-w-4xl mx-auto mb-16">
+                <div class="hero-glow" aria-hidden="true"></div>
+
+                <!-- Badge Superior Minimalista -->
+                <div class="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 font-semibold text-xs uppercase tracking-widest shadow-sm" style="--reveal-delay:0ms; background-color: #ffffff; border: 1.5px solid var(--brand-sage); color: var(--brand-teal)">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 animate-pulse"></i>
+                    Plataforma de gestão empresarial
+                </div>
+
+                <!-- Título Hero -->
+                <h1 class="reveal text-5xl md:text-7xl font-extrabold tracking-tight mb-4 leading-tight" style="--reveal-delay:90ms; color: var(--brand-dark)">
+                    SINAPSE
+                </h1>
+
+                <!-- Subtítulo -->
+                <p class="reveal lede text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mt-4" style="--reveal-delay:170ms; color: var(--text-muted)">
+                    Monitorar e cuidar da saúde mental da sua equipe nunca foi tão fácil. Alie produtividade ao bem-estar através de ferramentas preditivas modernas.
+                </p>
+
+                <!-- Botões de Chamada para Ação (Cadastro e Login) -->
+                <div class="reveal mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center" style="--reveal-delay:250ms">
+                    <button id="btnRegister" onclick="window.location.href='register.html'" class="w-full sm:w-auto px-8 py-4 rounded-xl text-white font-bold text-base shadow-lg hover:shadow-xl smooth-transition hover:-translate-y-0.5" style="background-color: var(--brand-teal)">
+                    CADASTRAR
+                </button>
+                <button id="btnLogin" onclick="window.location.href='login.html'" class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-base border-2 smooth-transition hover:bg-[#ebe5d9] hover:-translate-y-0.5" style="border-color: var(--brand-ochre); color: var(--brand-ochre)">
+                    LOGAR
+                </button>
+                </div>
+            </div>
+
+            <!-- Três Pilares Baseados no layout do app -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mt-8">
+                <!-- Card Insights -->
+                <div class="reveal panel-hover bg-white p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:320ms">
+                    <div class="w-14 h-14 rounded-2xl mb-5 flex items-center justify-center" style="background-color: rgba(200, 118, 45, 0.12)">
+                        <i data-lucide="lightbulb" class="w-7 h-7" style="color: var(--brand-ochre)"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-3" style="color: var(--brand-dark)">Monitore</h3>
+                    <p class="text-sm leading-relaxed" style="color: var(--text-muted)">O site conta com inúmeras ferramentas de análise para o humor e desempenho de toda a sua equipe em tempo real.</p>
+                </div>
+
+                <!-- Card Automação / Dashboards -->
+                <div class="reveal panel-hover bg-white p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:400ms">
+                    <div class="w-14 h-14 rounded-2xl mb-5 flex items-center justify-center" style="background-color: rgba(4, 135, 104, 0.12)">
+                        <i data-lucide="activity" class="w-7 h-7" style="color: var(--brand-teal)"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-3" style="color: var(--brand-dark)">Dashboards</h3>
+                    <p class="text-sm leading-relaxed" style="color: var(--text-muted)">Receba dashboards personalizados e interativos para cada necessidade e acompanhamento da sua empresa.</p>
+                </div>
+
+                <!-- Card Conectividade -->
+                <div class="reveal panel-hover bg-white p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:480ms">
+                    <div class="w-14 h-14 rounded-2xl mb-5 flex items-center justify-center" style="background-color: rgba(203, 83, 41, 0.12)">
+                        <i data-lucide="git-merge" class="w-7 h-7" style="color: var(--brand-terracotta)"></i>
+                    </div>
+                    <h3 class="text-lg font-bold mb-3" style="color: var(--brand-dark)">Conectividade</h3>
+                    <p class="text-sm leading-relaxed" style="color: var(--text-muted)">Conecte seus colaboradores, melhorando a dinâmica social interna, o clima de suporte e os ritmos saudáveis de produção.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ABAS: DASHBOARD ================= -->
+        <section id="tab-dashboard" class="tab-content hidden flex-col">
+            <div class="reveal mb-8 flex justify-between items-center flex-wrap gap-4" style="--reveal-delay:0ms">
+                <div>
+                    <h2 class="text-3xl font-extrabold" style="color: var(--brand-dark)">Painel de Saúde Organizacional</h2>
+                    <p class="text-sm" style="color: var(--text-muted)">Acompanhamento de engajamento, clima emocional e bem-estar em tempo real.</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5" style="background-color: #ffffff; border: 1px solid var(--border-soft); color: var(--brand-teal)">
+                        <span class="w-2.5 h-2.5 rounded-full animate-ping bg-emerald-500"></span>
+                        Análise de Clima Ativa
+                    </span>
+                    <!-- Botão adicionado para levar ao menu.html -->
+                    <a href="menu.html" class="px-5 py-2.5 rounded-xl text-white font-bold text-sm shadow-md hover:shadow-lg smooth-transition hover:-translate-y-0.5 flex items-center gap-2" style="background-color: var(--brand-teal)">
+                        <span>Começar o seu dashboard</span>
+                        <i data-lucide="arrow-right" class="w-4.5 h-4.5"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Grade de Monitoramento de Saúde Mental -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="reveal panel-hover bg-white p-6 rounded-3xl border border-[#e2dcce]" style="--reveal-delay:80ms">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-xs font-bold tracking-wider uppercase" style="color: var(--text-muted)">Clima de Bem-Estar Geral</span>
+                        <i data-lucide="smile" class="w-5 h-5" style="color: var(--brand-teal)"></i>
+                    </div>
+                    <h3 id="statWellbeing" class="text-3xl font-extrabold tabular-nums" data-target="84.6" style="color: var(--brand-dark)">0%</h3>
+                    <div class="w-full bg-gray-100 h-2 rounded-full mt-4">
+                        <div id="barWellbeing" class="stat-bar-fill h-full rounded-full" style="width: 0%; background-color: var(--brand-teal)"></div>
+                    </div>
+                </div>
+
+                <div class="reveal panel-hover bg-white p-6 rounded-3xl border border-[#e2dcce]" style="--reveal-delay:160ms">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-xs font-bold tracking-wider uppercase" style="color: var(--text-muted)">Foco nos Exercícios Preventivos</span>
+                        <i data-lucide="heart" class="w-5 h-5" style="color: var(--brand-ochre)"></i>
+                    </div>
+                    <h3 id="statExercise" class="text-3xl font-extrabold tabular-nums" data-target="92.1" style="color: var(--brand-dark)">0%</h3>
+                    <div class="w-full bg-gray-100 h-2 rounded-full mt-4">
+                        <div id="barExercise" class="stat-bar-fill h-full rounded-full" style="width: 0%; background-color: var(--brand-ochre)"></div>
+                    </div>
+                </div>
+
+                <div class="reveal panel-hover bg-white p-6 rounded-3xl border border-[#e2dcce]" style="--reveal-delay:240ms">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-xs font-bold tracking-wider uppercase" style="color: var(--text-muted)">Níveis Críticos de Estresse (Baixo)</span>
+                        <i data-lucide="shield-check" class="w-5 h-5" style="color: var(--brand-terracotta)"></i>
+                    </div>
+                    <h3 id="statStress" class="text-3xl font-extrabold tabular-nums" data-target="14.2" style="color: var(--brand-dark)">0%</h3>
+                    <div class="w-full bg-gray-100 h-2 rounded-full mt-4">
+                        <div id="barStress" class="stat-bar-fill h-full rounded-full" style="width: 0%; background-color: var(--brand-terracotta)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico de Exemplo em SVG de Clima Organizacional -->
+            <div class="reveal bg-white p-8 rounded-3xl border border-[#e2dcce] h-[360px] flex flex-col justify-between" style="--reveal-delay:320ms">
+                <div class="flex justify-between items-center">
+                    <h4 class="font-bold text-base" style="color: var(--brand-dark)">Evolução da Estabilidade de Clima Emocional</h4>
+                    <span class="text-xs font-bold" style="color: var(--brand-teal)">Estatística Diária</span>
+                </div>
+
+                <!-- Gráfico de barras semanal -->
+                <div class="flex-1 flex items-end justify-between gap-2 pt-6">
+                    <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Segunda-feira: 66% de estabilidade emocional">
+                        <span class="chart-tooltip">66%</span>
+                        <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 140px; border: 1.5px solid var(--border-soft)">
+                            <div class="w-full h-2/3 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
+                        </div>
+                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Seg</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Terça-feira: 78% de estabilidade emocional">
+                        <span class="chart-tooltip">78%</span>
+                        <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 180px; border: 1.5px solid var(--border-soft)">
+                            <div class="w-full h-3/4 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
+                        </div>
+                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Ter</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Quarta-feira: 71% de estabilidade emocional">
+                        <span class="chart-tooltip">71%</span>
+                        <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 160px; border: 1.5px solid var(--border-soft)">
+                            <div class="w-full h-1/2 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
+                        </div>
+                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Qua</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Quinta-feira: 92% de estabilidade emocional, o melhor dia da semana">
+                        <span class="chart-tooltip">92%</span>
+                        <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 220px; border: 1.5px solid var(--border-soft)">
+                            <div class="w-full h-[90%] rounded-t-lg smooth-transition" style="background-color: var(--brand-teal)"></div>
+                        </div>
+                        <span class="text-xs font-bold mt-2" style="color: var(--brand-teal)">Qui</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Sexta-feira: 74% de estabilidade emocional">
+                        <span class="chart-tooltip">74%</span>
+                        <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 170px; border: 1.5px solid var(--border-soft)">
+                            <div class="w-full h-2/3 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
+                        </div>
+                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Sex</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Sábado: 60% de estabilidade emocional">
+                        <span class="chart-tooltip">60%</span>
+                        <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 130px; border: 1.5px solid var(--border-soft)">
+                            <div class="w-full h-1/3 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
+                        </div>
+                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Sáb</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Domingo: 68% de estabilidade emocional">
+                        <span class="chart-tooltip">68%</span>
+                        <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 150px; border: 1.5px solid var(--border-soft)">
+                            <div class="w-full h-1/2 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
+                        </div>
+                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Dom</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ABAS: ASSISTÊNCIA ================= -->
+        <section id="tab-assistencia" class="tab-content hidden flex-col">
+            <div class="reveal mb-8" style="--reveal-delay:0ms">
+                <h2 class="text-3xl font-extrabold" style="color: var(--brand-dark)">Assistência Sinapse</h2>
+                <p class="text-sm" style="color: var(--text-muted)">Precisa de orientações ou mediações para o bem-estar organizacional? Fale com nosso suporte inteligente.</p>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="reveal bg-white rounded-3xl border border-[#e2dcce] overflow-hidden flex flex-col h-[500px]" style="--reveal-delay:140ms">
+                <!-- Chat Header -->
+                <div class="px-6 py-4 border-b border-[#e2dcce] flex items-center gap-3 bg-[#faf9f6]">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <div>
+                        <p class="text-sm font-bold" style="color: var(--brand-dark)">SINAPSE Assistant</p>
+                        <p class="text-xs" style="color: var(--text-muted)">IA focada em Saúde e Clima Organizacional</p>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Body -->
+                <div id="chatBody" class="flex-1 p-6 overflow-y-auto flex flex-col gap-4">
+                    <!-- Mensagem do Assistente -->
+                    <div class="msg-in flex gap-3 max-w-[80%]">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style="background-color: var(--brand-teal)">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-[#f6f4ee] rounded-tl-none">
+                            <p class="text-sm" style="color: var(--brand-dark)">Olá! Sou o assistente oficial do SINAPSE. Estou aqui para ajudar você a entender melhor o bem-estar emocional do seu time e traçar planos preventivos contra o esgotamento (Burnout). Como posso ajudar hoje?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input Footer -->
+                <div class="p-4 border-t border-[#e2dcce] bg-[#faf9f6] flex gap-3">
+                    <input type="text" id="chatInput" placeholder="Pergunte sobre dicas de bem-estar ou monitoramento..." class="flex-1 px-4 py-3 rounded-xl border border-[#e2dcce] outline-none text-sm focus:border-[#048768] smooth-transition bg-white">
+                    <button onclick="sendMessage()" class="px-5 py-3 rounded-xl text-white font-semibold text-sm flex items-center gap-2 smooth-transition hover:opacity-90" style="background-color: var(--brand-teal)">
+                        <span>Enviar</span>
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="mt-auto py-8 px-6 border-t border-[#e2dcce] bg-white">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-semibold" style="color: var(--text-muted)">
+            <p>© 2026 COGNITECH. Todos os direitos reservados.</p>
+            <div class="flex gap-6">
+                <a href="#" class="hover:underline">Privacidade</a>
+                <a href="#" class="hover:underline">Termos de Serviço</a>
+                <a href="#" class="hover:underline">Contato</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth-client.js"></script>
+    <script>
+        /* ================================================================
+           MÓDULO — SynapseNetwork
+           Motor de fundo animado em <canvas>, independente e reutilizável.
+           Configurável via atributos data-* no elemento canvas:
+             data-density      → densidade de nós por px² (padrão 0.00009)
+             data-max-distance → distância máxima de conexão entre nós (px)
+             data-speed        → velocidade de deslocamento dos nós
+           Respeita prefers-reduced-motion (desenha um quadro estático).
+           Uso em outra página: new SinapseFX.SynapseNetwork(canvasEl, {...})
+           ================================================================ */
+        (function () {
+            'use strict';
+
+            function hexToRgba(hex, alpha) {
+                const h = hex.replace('#', '');
+                const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+                const bigint = parseInt(full, 16);
+                const r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+
+            class SynapseNetwork {
+                constructor(canvas, options = {}) {
+                    this.canvas = canvas;
+                    this.ctx = canvas.getContext('2d');
+                    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+                    const ds = canvas.dataset || {};
+                    this.opts = Object.assign({
+                        colors: ['#048768', '#8fb3a2', '#c8762d'],
+                        pulseColors: ['#c8762d', '#048768'],
+                        lineColor: '#8fb3a2',
+                        density: ds.density ? parseFloat(ds.density) : 0.00009,
+                        maxDistance: ds.maxDistance ? parseFloat(ds.maxDistance) : 150,
+                        speed: ds.speed ? parseFloat(ds.speed) : 0.12,
+                        lineAlpha: 0.14,
+                        nodeAlpha: 0.55,
+                        pulseEvery: [1800, 4200],
+                        maxNodes: 90,
+                        minNodes: 22
+                    }, options);
+
+                    this.nodes = [];
+                    this.pulses = [];
+                    this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    this.running = false;
+                    this._pulseTimer = null;
+                    this._resizeTimer = null;
+
+                    this._onResize = () => {
+                        clearTimeout(this._resizeTimer);
+                        this._resizeTimer = setTimeout(() => this.resize(), 120);
+                    };
+                    this._tick = this.tick.bind(this);
+
+                    window.addEventListener('resize', this._onResize);
+                    this.resize();
+
+                    if (!this.reduced) {
+                        this.start();
+                        this.schedulePulse();
+                    } else {
+                        this.drawFrame();
+                    }
+                }
+
+                resize() {
+                    const w = window.innerWidth;
+                    const h = window.innerHeight;
+                    this.canvas.width = Math.round(w * this.dpr);
+                    this.canvas.height = Math.round(h * this.dpr);
+                    this.canvas.style.width = w + 'px';
+                    this.canvas.style.height = h + 'px';
+                    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+                    this.width = w;
+                    this.height = h;
+                    this.buildNodes();
+                    if (this.reduced) this.drawFrame();
+                }
+
+                buildNodes() {
+                    const count = Math.min(
+                        this.opts.maxNodes,
+                        Math.max(this.opts.minNodes, Math.round(this.width * this.height * this.opts.density))
+                    );
+                    this.nodes = new Array(count).fill(0).map(() => ({
+                        x: Math.random() * this.width,
+                        y: Math.random() * this.height,
+                        vx: (Math.random() - 0.5) * this.opts.speed,
+                        vy: (Math.random() - 0.5) * this.opts.speed,
+                        r: 1.4 + Math.random() * 1.6,
+                        color: this.opts.colors[Math.floor(Math.random() * this.opts.colors.length)]
+                    }));
+                }
+
+                schedulePulse() {
+                    if (this.reduced) return;
+                    const [min, max] = this.opts.pulseEvery;
+                    const delay = min + Math.random() * (max - min);
+                    this._pulseTimer = setTimeout(() => {
+                        this.fireRandomPulse();
+                        this.schedulePulse();
+                    }, delay);
+                }
+
+                fireRandomPulse() {
+                    if (!this.nodes.length) return;
+                    const from = this.nodes[Math.floor(Math.random() * this.nodes.length)];
+                    let nearest = null, nearestDist = Infinity;
+                    for (const n of this.nodes) {
+                        if (n === from) continue;
+                        const d = Math.hypot(n.x - from.x, n.y - from.y);
+                        if (d < this.opts.maxDistance && d < nearestDist) { nearest = n; nearestDist = d; }
+                    }
+                    if (!nearest) return;
+                    this.pulses.push({
+                        from, to: nearest, t: 0,
+                        color: this.opts.pulseColors[Math.floor(Math.random() * this.opts.pulseColors.length)]
+                    });
+                }
+
+                start() {
+                    if (this.running) return;
+                    this.running = true;
+                    this.lastT = performance.now();
+                    requestAnimationFrame(this._tick);
+                }
+
+                tick(now) {
+                    if (!this.running) return;
+                    const dt = Math.min(now - (this.lastT || now), 48);
+                    this.lastT = now;
+                    this.step(dt);
+                    this.drawFrame();
+                    requestAnimationFrame(this._tick);
+                }
+
+                step(dt) {
+                    const { width, height } = this;
+                    for (const n of this.nodes) {
+                        n.x += n.vx * (dt / 16);
+                        n.y += n.vy * (dt / 16);
+                        if (n.x < 0 || n.x > width) n.vx *= -1;
+                        if (n.y < 0 || n.y > height) n.vy *= -1;
+                        n.x = Math.max(0, Math.min(width, n.x));
+                        n.y = Math.max(0, Math.min(height, n.y));
+                    }
+                    this.pulses.forEach(p => { p.t += dt / 900; });
+                    this.pulses = this.pulses.filter(p => p.t < 1);
+                }
+
+                drawFrame() {
+                    const { ctx, width, height, nodes, opts } = this;
+                    ctx.clearRect(0, 0, width, height);
+
+                    for (let i = 0; i < nodes.length; i++) {
+                        for (let j = i + 1; j < nodes.length; j++) {
+                            const a = nodes[i], b = nodes[j];
+                            const d = Math.hypot(a.x - b.x, a.y - b.y);
+                            if (d < opts.maxDistance) {
+                                const alpha = opts.lineAlpha * (1 - d / opts.maxDistance);
+                                ctx.strokeStyle = hexToRgba(opts.lineColor, alpha);
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(a.x, a.y);
+                                ctx.lineTo(b.x, b.y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    for (const n of nodes) {
+                        ctx.beginPath();
+                        ctx.fillStyle = hexToRgba(n.color, opts.nodeAlpha);
+                        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    for (const p of this.pulses) {
+                        const x = p.from.x + (p.to.x - p.from.x) * p.t;
+                        const y = p.from.y + (p.to.y - p.from.y) * p.t;
+                        const fade = Math.sin(Math.PI * Math.min(Math.max(p.t, 0), 1));
+                        ctx.beginPath();
+                        ctx.fillStyle = hexToRgba(p.color, 0.85 * fade);
+                        ctx.arc(x, y, 2.6, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.fillStyle = hexToRgba(p.color, 0.18 * fade);
+                        ctx.arc(x, y, 7, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                destroy() {
+                    this.running = false;
+                    clearTimeout(this._pulseTimer);
+                    clearTimeout(this._resizeTimer);
+                    window.removeEventListener('resize', this._onResize);
+                }
+            }
+
+            window.SinapseFX = { SynapseNetwork };
+        })();
+
+        /* ================================================================
+           MÓDULO — Inicialização geral, navegação e interações
+           ================================================================ */
+        let currentTab = 'inicio';
+        let isLoggedIn = false;
+
+        function handleLoginClick() {
+            if (!isLoggedIn) {
+                window.location.href = 'login.html';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            // Verifica sessão e atualiza menu do usuário
+            SinapseAuth.getMe().then(({ user }) => {
+                isLoggedIn = true;
+                SinapseAuth.updateUserMenu(user);
+                document.getElementById('loginMenuLink')?.classList.add('hidden');
+                document.getElementById('logoutLink')?.classList.remove('hidden');
+                document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await SinapseAuth.logout();
+                    window.location.reload();
+                });
+                const btnRegister = document.getElementById('btnRegister');
+                const btnLogin = document.getElementById('btnLogin');
+                if (btnRegister) btnRegister.textContent = 'MEU PAINEL';
+                if (btnRegister) btnRegister.onclick = () => window.location.href = 'menu.html';
+                if (btnLogin) btnLogin.textContent = 'SAIR';
+                if (btnLogin) btnLogin.onclick = async () => { await SinapseAuth.logout(); window.location.reload(); };
+            }).catch(() => {});
+
+            // Fundo de sinapses
+            const synapseCanvas = document.getElementById('synapse-canvas');
+            if (synapseCanvas && synapseCanvas.getContext && window.SinapseFX) {
+                window.sinapseNetwork = new SinapseFX.SynapseNetwork(synapseCanvas);
+            }
+
+            // Indicador de navegação
+            updateNavIndicator(currentTab);
+            window.addEventListener('load', () => updateNavIndicator(currentTab));
+            window.addEventListener('resize', () => updateNavIndicator(currentTab));
+
+            // Revelação ao rolar / ao trocar de aba
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12 });
+                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+            } else {
+                document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+            }
+
+            // Lógica do Menu Dropdown de Login
+            const loginTrigger = document.getElementById('loginTrigger');
+            const loginDropdown = document.getElementById('loginDropdown');
+
+            loginTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isHidden = loginDropdown.classList.contains('hidden');
+                if (isHidden) {
+                    loginDropdown.classList.remove('hidden');
+                    setTimeout(() => {
+                        loginDropdown.classList.remove('opacity-0', 'translate-y-[-10px]');
+                        loginDropdown.classList.add('opacity-100', 'translate-y-0');
+                    }, 50);
+                } else {
+                    closeDropdown();
+                }
+            });
+
+            // Menu mobile
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleMobileMenu();
+                });
+            }
+
+            // Clique fora fecha os menus abertos
+            document.addEventListener('click', () => {
+                closeDropdown();
+                closeMobileMenu();
+            });
+
+            function closeDropdown() {
+                if (loginDropdown && !loginDropdown.classList.contains('hidden')) {
+                    loginDropdown.classList.remove('opacity-100', 'translate-y-0');
+                    loginDropdown.classList.add('opacity-0', 'translate-y-[-10px]');
+                    setTimeout(() => loginDropdown.classList.add('hidden'), 200);
+                }
+            }
+
+            // Escuta a tecla Enter no input do chat
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendMessage();
+                });
+            }
+        });
+
+        function updateNavIndicator(tabId) {
+            const nav = document.getElementById('desktopNav');
+            const indicator = document.getElementById('navIndicator');
+            const link = document.getElementById(`nav-${tabId}`);
+            if (!nav || !indicator || !link || nav.offsetWidth === 0) return;
+            const navRect = nav.getBoundingClientRect();
+            const linkRect = link.getBoundingClientRect();
+            indicator.style.left = (linkRect.left - navRect.left) + 'px';
+            indicator.style.width = linkRect.width + 'px';
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const btn = document.getElementById('mobileMenuBtn');
+            if (!menu) return;
+            const isHidden = menu.classList.contains('hidden');
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            } else {
+                closeMobileMenu();
+            }
+        }
+
+        function closeMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const btn = document.getElementById('mobileMenuBtn');
+            if (menu && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        // Troca inteligente de abas (SPA Like)
+        function switchTab(tabId) {
+            currentTab = tabId;
+
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.style.color = 'var(--text-muted)';
+                btn.classList.remove('active-tab');
+            });
+
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+                targetTab.classList.add('flex');
+            }
+
+            const targetNav = document.getElementById(`nav-${tabId}`);
+            if (targetNav) {
+                targetNav.style.color = 'var(--brand-teal)';
+                targetNav.classList.add('active-tab');
+            }
+
+            updateNavIndicator(tabId);
+            closeMobileMenu();
+
+            if (tabId === 'dashboard') {
+                requestAnimationFrame(() => animateDashboardStats());
+            }
+        }
+
+        // Anima os números e barras do dashboard a cada visita à aba
+        function animateDashboardStats() {
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const stats = [
+                { el: document.getElementById('statWellbeing'), bar: document.getElementById('barWellbeing'), delay: 0 },
+                { el: document.getElementById('statExercise'), bar: document.getElementById('barExercise'), delay: 90 },
+                { el: document.getElementById('statStress'), bar: document.getElementById('barStress'), delay: 180 }
+            ];
+
+            stats.forEach(({ el, bar, delay }) => {
+                if (!el) return;
+                const target = parseFloat(el.dataset.target);
+
+                if (reduced) {
+                    el.textContent = target.toFixed(1) + '%';
+                    if (bar) bar.style.width = target + '%';
+                    return;
+                }
+
+                if (bar) {
+                    bar.style.transition = 'none';
+                    bar.style.width = '0%';
+                    void bar.offsetWidth; // força reflow para permitir replay da animação
+                    bar.style.transition = '';
+                }
+
+                const duration = 900;
+                const start = performance.now();
+                function step(now) {
+                    const p = Math.min((now - start) / duration, 1);
+                    const eased = 1 - Math.pow(1 - p, 3);
+                    el.textContent = (target * eased).toFixed(1) + '%';
+                    if (p < 1) requestAnimationFrame(step);
+                    else el.textContent = target.toFixed(1) + '%';
+                }
+                requestAnimationFrame(step);
+                setTimeout(() => { if (bar) bar.style.width = target + '%'; }, 30 + delay);
+            });
+        }
+
+        // Simulação de Mensagem no Chat da Assistência
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const chatBody = document.getElementById('chatBody');
+
+            if (!input || !input.value.trim()) return;
+
+            const userText = input.value;
+            input.value = '';
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg-in flex gap-3 max-w-[80%] ml-auto justify-end';
+            userMsg.innerHTML = `
+                <div class="p-4 rounded-2xl rounded-tr-none text-white text-sm" style="background-color: var(--brand-teal)">
+                    <p>${userText}</p>
+                </div>
+            `;
+            chatBody.appendChild(userMsg);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'msg-in flex gap-3 max-w-[80%] items-center text-sm text-gray-400';
+            typingIndicator.id = 'typing-indicator';
+            typingIndicator.innerHTML = `
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 animate-pulse" style="background-color: var(--brand-sage)">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                </div>
+                <div class="p-3 bg-[#f6f4ee] rounded-2xl flex items-center gap-2">
+                    <span>Sinapse está analisando</span>
+                    <span class="flex items-center gap-1">
+                        <span class="typing-dot" style="animation-delay:0s"></span>
+                        <span class="typing-dot" style="animation-delay:.15s"></span>
+                        <span class="typing-dot" style="animation-delay:.3s"></span>
+                    </span>
+                </div>
+            `;
+            chatBody.appendChild(typingIndicator);
+            lucide.createIcons();
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            setTimeout(() => {
+                typingIndicator.remove();
+
+                const assistantMsg = document.createElement('div');
+                assistantMsg.className = 'msg-in flex gap-3 max-w-[80%]';
+                assistantMsg.innerHTML = `
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style="background-color: var(--brand-teal)">
+                        <i data-lucide="bot" class="w-4 h-4"></i>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-[#f6f4ee] rounded-tl-none">
+                        <p class="text-sm" style="color: var(--brand-dark)">Entendi perfeitamente sua demanda. No ecossistema <strong>SINAPSE</strong>, correlacionamos pesquisas dinâmicas com padrões de estresse para prever desgastes na equipe antes que impactem a produção. Gostaria que eu simulasse um plano de ação de 3 etapas para sua equipe?</p>
+                    </div>
+                `;
+                chatBody.appendChild(assistantMsg);
+                lucide.createIcons();
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 1200);
+        }
+    </script>
+</body>
+</html>

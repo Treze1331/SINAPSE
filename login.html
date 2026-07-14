@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SINAPSE - Login</title>
+
+    <!-- Tailwind CSS para estilização moderna e rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Importação de Ícones Modernos (Lucide Icons) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Biblioteca Oficial do Google Identity Services removida — OAuth via Supabase -->
+
+    <!-- Configuração de fontes premium e variáveis da paleta de cores -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="sources/logo3.png">
+    <style>
+        :root {
+            /* Paleta oficial SINAPSE — inalterada */
+            --bg-sand: #f5f2eb;             /* Fundo Areia Claro */
+            --brand-teal: #048768;          /* Verde Teal Principal */
+            --brand-sage: #8fb3a2;          /* Verde Sage de Apoio */
+            --brand-ochre: #c8762d;         /* Ouro/Ocre de Contraste */
+            --brand-terracotta: #cb5329;    /* Terracota para Ações de Alerta/Atenção */
+            --brand-dark: #132624;          /* Fundo Escuro para Seções */
+            --text-main: #132624;
+            --text-muted: #536461;
+            --border-soft: #e2dcce;
+
+            /* Tokens derivados — sistema de design */
+            --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-xl: 32px;
+            --shadow-md: 0 8px 24px -8px rgba(19,38,36,0.14);
+            --shadow-lg: 0 20px 48px -12px rgba(19,38,36,0.20);
+            --teal-14: rgba(4,135,104,0.14);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --dur-slow: 600ms;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background-color: var(--bg-sand);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        .smooth-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Vidro Fosco */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.70);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-soft);
+        }
+
+        /* Canvas de Fundo */
+        #synapse-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            display: block;
+        }
+        
+        main { position: relative; z-index: 10; }
+
+        /* Brilho ambiente atrás do formulário */
+        .hero-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(closest-side, var(--teal-14), transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Estilização customizada para a caixa do Google Sign-In */
+        #google-signin-btn iframe {
+            margin: 0 auto !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased justify-between">
+
+    <!-- Fundo dinâmico de sinapses -->
+    <canvas id="synapse-canvas" aria-hidden="true" data-density="0.00009" data-max-distance="150" data-speed="0.12"></canvas>
+
+    <!-- Top Bar Minimalista -->
+    <header class="w-full py-6 px-6 max-w-7xl mx-auto flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-3 text-2xl font-extrabold tracking-tight hover:opacity-90 smooth-transition">
+            <img src="sources/logo3.png" alt="SINAPSE Logo" class="h-10 w-auto object-contain">
+            <span class="tracking-widest font-extrabold" style="color: var(--brand-dark)">SINAPSE</span>
+        </a>
+        <a href="index.html" class="flex items-center gap-2 text-sm font-bold smooth-transition hover:-translate-x-1" style="color: var(--brand-teal)">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar ao Início
+        </a>
+    </header>
+
+    <!-- Formulário Principal de Login -->
+    <main class="flex-1 flex items-center justify-center px-6 relative w-full">
+        <div class="hero-glow" aria-hidden="true"></div>
+
+        <!-- Card de Login -->
+        <div class="w-full max-w-md glass-panel p-8 sm:p-10 rounded-3xl shadow-lg relative flex flex-col gap-6">
+            
+            <!-- Logo e Cabeçalho -->
+            <div class="text-center">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-4 font-semibold text-xs uppercase tracking-wider" style="background-color: #ffffff; border: 1.5px solid var(--brand-sage); color: var(--brand-teal)">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    Acesso Seguro
+                </div>
+                <h2 class="text-2xl font-extrabold tracking-tight" style="color: var(--brand-dark)">Bem-vindo de volta</h2>
+                <p class="text-xs mt-1" style="color: var(--text-muted)">Acesse suas equipes e relatórios preditivos</p>
+            </div>
+
+            <!-- Login Tradicional (E-mail/Senha) -->
+            <div id="formError" class="hidden px-4 py-3 rounded-xl text-sm font-semibold" style="background-color: rgba(203,83,41,0.1); color: var(--brand-terracotta)"></div>
+
+            <form id="traditionalLoginForm" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label for="email" class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-muted)">E-mail Corporativo</label>
+                    <div class="relative">
+                        <input type="email" id="email" required placeholder="exemplo@empresa.com" class="w-full pl-11 pr-4 py-3 rounded-xl border border-[#e2dcce] bg-white text-sm outline-none focus:border-[var(--brand-teal)] focus:ring-1 focus:ring-[var(--brand-teal)] smooth-transition">
+                        <i data-lucide="mail" class="w-4.5 h-4.5 absolute left-4 top-1/2 -translate-y-1/2" style="color: var(--brand-sage)"></i>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <div class="flex justify-between items-center">
+                        <label for="password" class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-muted)">Senha</label>
+                        <a href="#" id="forgotPasswordLink" class="text-xs font-bold hover:underline" style="color: var(--brand-ochre)">Esqueceu?</a>
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="password" required placeholder="••••••••" class="w-full pl-11 pr-4 py-3 rounded-xl border border-[#e2dcce] bg-white text-sm outline-none focus:border-[var(--brand-teal)] focus:ring-1 focus:ring-[var(--brand-teal)] smooth-transition">
+                        <i data-lucide="lock" class="w-4.5 h-4.5 absolute left-4 top-1/2 -translate-y-1/2" style="color: var(--brand-sage)"></i>
+                    </div>
+                </div>
+
+                <button type="submit" id="loginBtn" class="w-full py-3.5 rounded-xl text-white font-bold text-sm shadow-md hover:shadow-lg smooth-transition hover:-translate-y-0.5 mt-2 flex items-center justify-center gap-2" style="background-color: var(--brand-teal)">
+                    <span>Entrar na Plataforma</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+
+            <!-- Divisor Moderno -->
+            <div class="flex items-center gap-3 my-1">
+                <span class="h-[1px] bg-[#e2dcce] flex-1"></span>
+                <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted)">ou continue com</span>
+                <span class="h-[1px] bg-[#e2dcce] flex-1"></span>
+            </div>
+
+            <!-- Botão de Login do Google -->
+            <button type="button" id="googleBtn" class="w-full py-3 rounded-xl border border-[#e2dcce] bg-white font-semibold text-sm smooth-transition hover:bg-[#faf9f6] flex items-center justify-center gap-2">
+                <i data-lucide="chrome" class="w-4 h-4" style="color: var(--brand-teal)"></i>
+                Continuar com Google
+            </button>
+
+            <!-- Rodapé do Card -->
+            <p class="text-center text-xs mt-2" style="color: var(--text-muted)">
+                Ainda não tem conta? <a href="register.html" class="font-bold hover:underline" style="color: var(--brand-teal)">Cadastre sua organização</a>
+            </p>
+        </div>
+    </main>
+
+    <!-- Footer Idêntico -->
+    <footer class="py-6 px-6 border-t border-[#e2dcce] bg-white w-full">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-semibold" style="color: var(--text-muted)">
+            <p>© 2026 COGNITECH. Todos os direitos reservados.</p>
+            <div class="flex gap-6">
+                <a href="#" class="hover:underline">Privacidade</a>
+                <a href="#" class="hover:underline">Termos</a>
+                <a href="#" class="hover:underline">Suporte</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth-client.js"></script>
+    <script>
+        (function () {
+            'use strict';
+            function hexToRgba(hex, alpha) {
+                const h = hex.replace('#', '');
+                const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+                const bigint = parseInt(full, 16);
+                const r = (bigint >> 16) & 255, g = (bigint >> 8) & 255, b = bigint & 255;
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+
+            class SynapseNetwork {
+                constructor(canvas, options = {}) {
+                    this.canvas = canvas;
+                    this.ctx = canvas.getContext('2d');
+                    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    const ds = canvas.dataset || {};
+                    this.opts = Object.assign({
+                        colors: ['#048768', '#8fb3a2', '#c8762d'],
+                        pulseColors: ['#c8762d', '#048768'],
+                        lineColor: '#8fb3a2',
+                        density: ds.density ? parseFloat(ds.density) : 0.00009,
+                        maxDistance: ds.maxDistance ? parseFloat(ds.maxDistance) : 150,
+                        speed: ds.speed ? parseFloat(ds.speed) : 0.12,
+                        lineAlpha: 0.14,
+                        nodeAlpha: 0.55,
+                        pulseEvery: [1800, 4200],
+                        maxNodes: 90,
+                        minNodes: 22
+                    }, options);
+                    this.nodes = [];
+                    this.pulses = [];
+                    this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    this.running = false;
+                    this._pulseTimer = null;
+                    this._resizeTimer = null;
+                    this._onResize = () => {
+                        clearTimeout(this._resizeTimer);
+                        this._resizeTimer = setTimeout(() => this.resize(), 120);
+                    };
+                    this._tick = this.tick.bind(this);
+                    window.addEventListener('resize', this._onResize);
+                    this.resize();
+                    if (!this.reduced) {
+                        this.start();
+                        this.schedulePulse();
+                    } else {
+                        this.drawFrame();
+                    }
+                }
+                resize() {
+                    const w = window.innerWidth;
+                    const h = window.innerHeight;
+                    this.canvas.width = Math.round(w * this.dpr);
+                    this.canvas.height = Math.round(h * this.dpr);
+                    this.canvas.style.width = w + 'px';
+                    this.canvas.style.height = h + 'px';
+                    this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+                    this.width = w;
+                    this.height = h;
+                    this.buildNodes();
+                    if (this.reduced) this.drawFrame();
+                }
+                buildNodes() {
+                    const count = Math.min(
+                        this.opts.maxNodes,
+                        Math.max(this.opts.minNodes, Math.round(this.width * this.height * this.opts.density))
+                    );
+                    this.nodes = new Array(count).fill(0).map(() => ({
+                        x: Math.random() * this.width,
+                        y: Math.random() * this.height,
+                        vx: (Math.random() - 0.5) * this.opts.speed,
+                        vy: (Math.random() - 0.5) * this.opts.speed,
+                        r: 1.4 + Math.random() * 1.6,
+                        color: this.opts.colors[Math.floor(Math.random() * this.opts.colors.length)]
+                    }));
+                }
+                schedulePulse() {
+                    if (this.reduced) return;
+                    const [min, max] = this.opts.pulseEvery;
+                    const delay = min + Math.random() * (max - min);
+                    this._pulseTimer = setTimeout(() => {
+                        this.fireRandomPulse();
+                        this.schedulePulse();
+                    }, delay);
+                }
+                fireRandomPulse() {
+                    if (!this.nodes.length) return;
+                    const from = this.nodes[Math.floor(Math.random() * this.nodes.length)];
+                    let nearest = null, nearestDist = Infinity;
+                    for (const n of this.nodes) {
+                        if (n === from) continue;
+                        const d = Math.hypot(n.x - from.x, n.y - from.y);
+                        if (d < this.opts.maxDistance && d < nearestDist) { nearest = n; nearestDist = d; }
+                    }
+                    if (!nearest) return;
+                    this.pulses.push({
+                        from, to: nearest, t: 0,
+                        color: this.opts.pulseColors[Math.floor(Math.random() * this.opts.pulseColors.length)]
+                    });
+                }
+                start() {
+                    if (this.running) return;
+                    this.running = true;
+                    this.lastT = performance.now();
+                    requestAnimationFrame(this._tick);
+                }
+                tick(now) {
+                    if (!this.running) return;
+                    const dt = Math.min(now - (this.lastT || now), 48);
+                    this.lastT = now;
+                    this.step(dt);
+                    this.drawFrame();
+                    requestAnimationFrame(this._tick);
+                }
+                step(dt) {
+                    const { width, height } = this;
+                    for (const n of this.nodes) {
+                        n.x += n.vx * (dt / 16);
+                        n.y += n.vy * (dt / 16);
+                        if (n.x < 0 || n.x > width) n.vx *= -1;
+                        if (n.y < 0 || n.y > height) n.vy *= -1;
+                        n.x = Math.max(0, Math.min(width, n.x));
+                        n.y = Math.max(0, Math.min(height, n.y));
+                    }
+                    this.pulses.forEach(p => { p.t += dt / 900; });
+                    this.pulses = this.pulses.filter(p => p.t < 1);
+                }
+                drawFrame() {
+                    const { ctx, width, height, nodes, opts } = this;
+                    ctx.clearRect(0, 0, width, height);
+                    for (let i = 0; i < nodes.length; i++) {
+                        for (let j = i + 1; j < nodes.length; j++) {
+                            const a = nodes[i], b = nodes[j];
+                            const d = Math.hypot(a.x - b.x, a.y - b.y);
+                            if (d < opts.maxDistance) {
+                                const alpha = opts.lineAlpha * (1 - d / opts.maxDistance);
+                                ctx.strokeStyle = hexToRgba(opts.lineColor, alpha);
+                                ctx.lineWidth = 1;
+                                ctx.beginPath();
+                                ctx.moveTo(a.x, a.y);
+                                ctx.lineTo(b.x, b.y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                    for (const n of nodes) {
+                        ctx.beginPath();
+                        ctx.fillStyle = hexToRgba(n.color, opts.nodeAlpha);
+                        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    for (const p of this.pulses) {
+                        const x = p.from.x + (p.to.x - p.from.x) * p.t;
+                        const y = p.from.y + (p.to.y - p.from.y) * p.t;
+                        const fade = Math.sin(Math.PI * Math.min(Math.max(p.t, 0), 1));
+                        ctx.beginPath();
+                        ctx.fillStyle = hexToRgba(p.color, 0.85 * fade);
+                        ctx.arc(x, y, 2.6, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.fillStyle = hexToRgba(p.color, 0.18 * fade);
+                        ctx.arc(x, y, 7, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+            window.SinapseFX = { SynapseNetwork };
+        })();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('error') === 'oauth_failed') {
+                SinapseAuth.showError('formError', 'Falha no login com Google. Tente novamente.');
+            }
+            if (params.get('reset') === 'true') {
+                SinapseAuth.showNotification('Link de recuperação enviado. Verifique seu e-mail.', 'info');
+            }
+
+            document.getElementById('traditionalLoginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                SinapseAuth.hideError('formError');
+
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const btn = document.getElementById('loginBtn');
+
+                btn.disabled = true;
+                btn.querySelector('span').textContent = 'Entrando...';
+
+                try {
+                    await SinapseAuth.login({ email, password });
+                    SinapseAuth.showNotification('Acesso autorizado! Carregando painel...');
+                    const redirect = params.get('redirect') || '/menu.html';
+                    setTimeout(() => window.location.href = decodeURIComponent(redirect), 1500);
+                } catch (err) {
+                    SinapseAuth.showError('formError', err.message);
+                    btn.disabled = false;
+                    btn.querySelector('span').textContent = 'Entrar na Plataforma';
+                }
+            });
+
+            document.getElementById('googleBtn').addEventListener('click', () => {
+                SinapseAuth.loginWithGoogle();
+            });
+
+            document.getElementById('forgotPasswordLink').addEventListener('click', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value.trim();
+                if (!email) {
+                    SinapseAuth.showError('formError', 'Digite seu e-mail para recuperar a senha.');
+                    return;
+                }
+                try {
+                    await SinapseAuth.forgotPassword(email);
+                    SinapseAuth.showNotification('Se o e-mail existir, você receberá um link de recuperação.', 'info');
+                } catch (err) {
+                    SinapseAuth.showError('formError', err.message);
+                }
+            });
+
+            const synapseCanvas = document.getElementById('synapse-canvas');
+            if (synapseCanvas && synapseCanvas.getContext && window.SinapseFX) {
+                window.sinapseNetwork = new SinapseFX.SynapseNetwork(synapseCanvas);
+            }
+        });
+    </script>
+</body>
+</html>
