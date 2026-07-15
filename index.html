@@ -228,44 +228,12 @@
                 <span id="navIndicator" aria-hidden="true"></span>
             </nav>
 
-            <!-- Menu de Usuário, Login e Menu Mobile -->
+            <!-- Menu Mobile -->
             <div class="relative flex items-center gap-3">
                 <!-- Botão de menu mobile -->
                 <button id="mobileMenuBtn" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-[#e2dcce] bg-white smooth-transition" aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="mobileMenu">
                     <i data-lucide="menu" class="w-5 h-5" style="color: var(--brand-dark)"></i>
                 </button>
-
-                <button id="loginTrigger" onclick="handleLoginClick()" class="flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#e2dcce] bg-white hover:bg-[#faf9f6] text-sm font-semibold smooth-transition shadow-sm">
-                    <span style="color: var(--text-muted)" class="hidden sm:inline">Login</span>
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white" style="background-color: var(--brand-teal)">
-                        <i data-lucide="user" class="w-4 h-4"></i>
-                    </div>
-                </button>
-
-                <!-- Menu Dropdown Interativo (Desce ao clicar no Login) -->
-                <div id="loginDropdown" class="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-[#e2dcce] bg-white p-2.5 shadow-xl hidden flex-col gap-1 z-50 opacity-0 transform translate-y-[-10px] smooth-transition">
-                    <div class="px-4 py-3 border-b border-[#f0ebe0] mb-1.5">
-                        <p class="text-xs font-semibold tracking-wider uppercase opacity-60" style="color: var(--brand-ochre)">Acesso Rápido</p>
-                        <p class="text-sm font-bold truncate" style="color: var(--brand-dark)">Conecte seu perfil</p>
-                    </div>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-dark)">
-                        <i data-lucide="user-cog" class="w-4 h-4" style="color: var(--brand-teal)"></i>
-                        Minha Conta
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-dark)">
-                        <i data-lucide="settings" class="w-4 h-4" style="color: var(--brand-teal)"></i>
-                        Configurações
-                    </a>
-                    <a href="login.html" id="loginMenuLink" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-teal)">
-                        <i data-lucide="log-in" class="w-4 h-4" style="color: var(--brand-teal)"></i>
-                        Fazer Login
-                    </a>
-                    <div class="h-[1px] bg-[#f0ebe0] my-1.5"></div>
-                    <a href="#logout" id="logoutLink" class="hidden flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-red-50 smooth-transition" style="color: var(--brand-terracotta)">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                        Sair
-                    </a>
-                </div>
             </div>
         </div>
 
@@ -304,12 +272,12 @@
 
                 <!-- Botões de Chamada para Ação (Cadastro e Login) -->
                 <div class="reveal mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center" style="--reveal-delay:250ms">
-                    <button id="btnRegister" onclick="window.location.href='register.html'" class="w-full sm:w-auto px-8 py-4 rounded-xl text-white font-bold text-base shadow-lg hover:shadow-xl smooth-transition hover:-translate-y-0.5" style="background-color: var(--brand-teal)">
-                    CADASTRAR
-                </button>
-                <button id="btnLogin" onclick="window.location.href='login.html'" class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-base border-2 smooth-transition hover:bg-[#ebe5d9] hover:-translate-y-0.5" style="border-color: var(--brand-ochre); color: var(--brand-ochre)">
-                    LOGAR
-                </button>
+                    <button class="w-full sm:w-auto px-8 py-4 rounded-xl text-white font-bold text-base shadow-lg hover:shadow-xl smooth-transition hover:-translate-y-0.5" style="background-color: var(--brand-teal)">
+                        CADASTRAR
+                    </button>
+                    <button class="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-base border-2 smooth-transition hover:bg-[#ebe5d9] hover:-translate-y-0.5" style="border-color: var(--brand-ochre); color: var(--brand-ochre)">
+                        LOGAR
+                    </button>
                 </div>
             </div>
 
@@ -517,7 +485,6 @@
         </div>
     </footer>
 
-    <script src="js/auth-client.js"></script>
     <script>
         /* ================================================================
            MÓDULO — SynapseNetwork
@@ -727,79 +694,59 @@
            MÓDULO — Inicialização geral, navegação e interações
            ================================================================ */
         let currentTab = 'inicio';
-        let isLoggedIn = false;
-
-        function handleLoginClick() {
-            if (!isLoggedIn) {
-                window.location.href = 'login.html';
-            }
-        }
 
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-
-            // Verifica sessão e atualiza menu do usuário
-            SinapseAuth.getMe().then(({ user }) => {
-                isLoggedIn = true;
-                SinapseAuth.updateUserMenu(user);
-                document.getElementById('loginMenuLink')?.classList.add('hidden');
-                document.getElementById('logoutLink')?.classList.remove('hidden');
-                document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    await SinapseAuth.logout();
-                    window.location.reload();
-                });
-                const btnRegister = document.getElementById('btnRegister');
-                const btnLogin = document.getElementById('btnLogin');
-                if (btnRegister) btnRegister.textContent = 'MEU PAINEL';
-                if (btnRegister) btnRegister.onclick = () => window.location.href = 'menu.html';
-                if (btnLogin) btnLogin.textContent = 'SAIR';
-                if (btnLogin) btnLogin.onclick = async () => { await SinapseAuth.logout(); window.location.reload(); };
-            }).catch(() => {});
-
-            // Fundo de sinapses
-            const synapseCanvas = document.getElementById('synapse-canvas');
-            if (synapseCanvas && synapseCanvas.getContext && window.SinapseFX) {
-                window.sinapseNetwork = new SinapseFX.SynapseNetwork(synapseCanvas);
-            }
-
-            // Indicador de navegação
-            updateNavIndicator(currentTab);
-            window.addEventListener('load', () => updateNavIndicator(currentTab));
-            window.addEventListener('resize', () => updateNavIndicator(currentTab));
-
-            // Revelação ao rolar / ao trocar de aba
-            if ('IntersectionObserver' in window) {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('is-visible');
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, { threshold: 0.12 });
-                document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-            } else {
+            // IMPORTANTE: a revelação do conteúdo (.reveal) roda primeiro e isolada
+            // em seu próprio try/catch. Assim, se qualquer outra parte da
+            // inicialização falhar (ex.: CDN de ícones fora do ar), o conteúdo
+            // principal da página nunca fica invisível/travado em opacity:0.
+            try {
+                if ('IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.12 });
+                    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+                } else {
+                    document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+                }
+            } catch (err) {
+                console.error('Falha ao configurar revelação de conteúdo:', err);
                 document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
             }
 
-            // Lógica do Menu Dropdown de Login
-            const loginTrigger = document.getElementById('loginTrigger');
-            const loginDropdown = document.getElementById('loginDropdown');
-
-            loginTrigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isHidden = loginDropdown.classList.contains('hidden');
-                if (isHidden) {
-                    loginDropdown.classList.remove('hidden');
-                    setTimeout(() => {
-                        loginDropdown.classList.remove('opacity-0', 'translate-y-[-10px]');
-                        loginDropdown.classList.add('opacity-100', 'translate-y-0');
-                    }, 50);
-                } else {
-                    closeDropdown();
+            // Ícones (Lucide) — se o script externo falhar ao carregar, não deve
+            // travar o restante da inicialização da página.
+            try {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
                 }
-            });
+            } catch (err) {
+                console.error('Falha ao carregar ícones Lucide:', err);
+            }
+
+            // Fundo de sinapses
+            try {
+                const synapseCanvas = document.getElementById('synapse-canvas');
+                if (synapseCanvas && synapseCanvas.getContext && window.SinapseFX) {
+                    window.sinapseNetwork = new SinapseFX.SynapseNetwork(synapseCanvas);
+                }
+            } catch (err) {
+                console.error('Falha ao iniciar fundo de sinapses:', err);
+            }
+
+            // Indicador de navegação
+            try {
+                updateNavIndicator(currentTab);
+                window.addEventListener('load', () => updateNavIndicator(currentTab));
+                window.addEventListener('resize', () => updateNavIndicator(currentTab));
+            } catch (err) {
+                console.error('Falha ao iniciar indicador de navegação:', err);
+            }
 
             // Menu mobile
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -810,19 +757,10 @@
                 });
             }
 
-            // Clique fora fecha os menus abertos
+            // Clique fora fecha o menu mobile aberto
             document.addEventListener('click', () => {
-                closeDropdown();
                 closeMobileMenu();
             });
-
-            function closeDropdown() {
-                if (loginDropdown && !loginDropdown.classList.contains('hidden')) {
-                    loginDropdown.classList.remove('opacity-100', 'translate-y-0');
-                    loginDropdown.classList.add('opacity-0', 'translate-y-[-10px]');
-                    setTimeout(() => loginDropdown.classList.add('hidden'), 200);
-                }
-            }
 
             // Escuta a tecla Enter no input do chat
             const chatInput = document.getElementById('chatInput');
