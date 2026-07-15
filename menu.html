@@ -157,44 +157,11 @@
                 <span id="navIndicator" aria-hidden="true"></span>
             </nav>
 
-            <!-- Menu de Usuário e Menu Mobile -->
+            <!-- Menu Mobile -->
             <div class="relative flex items-center gap-3">
                 <button id="mobileMenuBtn" class="md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-[#e2dcce] bg-white smooth-transition" aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="mobileMenu">
                     <i data-lucide="menu" class="w-5 h-5" style="color: var(--brand-dark)"></i>
                 </button>
-
-                <!-- Botão de Trigger do Dropdown atualizado de Admin para Login[cite: 5, 6] -->
-                <button id="loginTrigger" class="flex items-center gap-2 px-4 py-2.5 rounded-full border border-[#e2dcce] bg-white hover:bg-[#faf9f6] text-sm font-semibold smooth-transition shadow-sm">
-                    <span style="color: var(--text-muted)" class="hidden sm:inline">Login</span>
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white" style="background-color: var(--brand-teal)">
-                        <i data-lucide="user" class="w-4 h-4"></i>
-                    </div>
-                </button>
-
-                <!-- Menu Dropdown Interativo (Desce ao clicar no Login)[cite: 6] -->
-                <div id="loginDropdown" class="absolute right-0 top-full mt-3 w-64 rounded-2xl border border-[#e2dcce] bg-white p-2.5 shadow-xl hidden flex-col gap-1 z-50 opacity-0 transform translate-y-[-10px] smooth-transition">
-                    <div class="px-4 py-3 border-b border-[#f0ebe0] mb-1.5">
-                        <p class="text-xs font-semibold tracking-wider uppercase opacity-60" style="color: var(--brand-ochre)">Acesso Rápido</p>
-                        <p class="text-sm font-bold truncate" style="color: var(--brand-dark)">Conecte seu perfil</p>
-                    </div>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-dark)">
-                        <i data-lucide="user-cog" class="w-4 h-4" style="color: var(--brand-teal)"></i>
-                        Minha Conta
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-dark)">
-                        <i data-lucide="settings" class="w-4 h-4" style="color: var(--brand-teal)"></i>
-                        Configurações
-                    </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#f6f4ee] smooth-transition" style="color: var(--brand-teal)">
-                        <i data-lucide="bell" class="w-4 h-4" style="color: var(--brand-teal)"></i>
-                        Notificações
-                    </a>
-                    <div class="h-[1px] bg-[#f0ebe0] my-1.5"></div>
-                    <a href="#logout" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold hover:bg-red-50 smooth-transition" style="color: var(--brand-terracotta)">
-                        <i data-lucide="log-out" class="w-4 h-4"></i>
-                        Sair
-                    </a>
-                </div>
             </div>
         </div>
 
