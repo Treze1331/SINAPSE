@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <!-- Configuração de fontes premium e variáveis da paleta de cores -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" href="sources/logo3.png">
     <style>
         :root {
@@ -77,6 +77,7 @@
 
         /* Active indicators (cor apenas — a barra deslizante fica no #navIndicator) */
         .active-tab { color: var(--brand-teal) !important; }
+        .active-tab-mobile { background-color: var(--teal-08); color: var(--brand-teal) !important; }
 
         /* ============================================================
            CAMADA 0 — Motor de fundo "Sinapses" (ver script SynapseNetwork)
@@ -100,7 +101,7 @@
             outline-offset: 2px;
             border-radius: 4px;
         }
-        button, .nav-btn { -webkit-tap-highlight-color: transparent; }
+        button, .nav-btn, .mob-nav-btn { -webkit-tap-highlight-color: transparent; }
         button:active { transform: scale(0.98); }
 
         h1, h2, h3 { text-wrap: balance; }
@@ -154,9 +155,9 @@
             transition: left var(--dur-base) var(--ease-out-expo), width var(--dur-base) var(--ease-out-expo);
         }
 
-        /* Menu mobile */
-        #mobileMenuBtn i { transition: transform var(--dur-base) var(--ease-out-expo); }
-        #mobileMenuBtn[aria-expanded="true"] i { transform: rotate(90deg); }
+        /* Ajuste do Menu Mobile para suportar rotação de SVG gerado pelo Lucide */
+        #mobileMenuBtn i, #mobileMenuBtn svg { transition: transform var(--dur-base) var(--ease-out-expo); }
+        #mobileMenuBtn[aria-expanded="true"] i, #mobileMenuBtn[aria-expanded="true"] svg { transform: rotate(90deg); }
 
         /* Cartões — leve elevação intencional no hover (aplicado junto às classes utilitárias existentes) */
         .panel-hover { transition: transform var(--dur-base) var(--ease-out-expo), box-shadow var(--dur-base) var(--ease-out-expo); }
@@ -212,11 +213,11 @@
     <canvas id="synapse-canvas" aria-hidden="true" data-density="0.00009" data-max-distance="150" data-speed="0.12"></canvas>
 
     <header class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-[#e2dcce] smooth-transition">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex justify-between items-center">
 
             <!-- Logo Oficial "sources/logo3.png" -->
-            <a href="#" onclick="switchTab('inicio'); return false;" class="flex items-center gap-3 text-2xl font-extrabold tracking-tight hover:opacity-90 smooth-transition">
-                <img src="sources/logo3.png" alt="SINAPSE Logo" class="h-10 w-auto object-contain">
+            <a href="#" onclick="switchTab('inicio'); return false;" class="flex items-center gap-3 text-xl sm:text-2xl font-extrabold tracking-tight hover:opacity-90 smooth-transition">
+                <img src="sources/logo3.png" alt="SINAPSE Logo" class="h-8 sm:h-10 w-auto object-contain">
                 <span class="tracking-widest font-extrabold" style="color: var(--brand-dark)">SINAPSE</span>
             </a>
 
@@ -237,41 +238,41 @@
             </div>
         </div>
 
-        <!-- Painel de navegação mobile -->
-        <div id="mobileMenu" class="md:hidden hidden absolute top-full left-0 w-full bg-white border-b border-[#e2dcce] shadow-xl flex-col p-3 gap-1">
-            <a href="#" onclick="switchTab('inicio'); return false;" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Início</a>
-            <a href="#" onclick="switchTab('dashboard'); return false;" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Dashboard</a>
-            <a href="#" onclick="switchTab('assistencia'); return false;" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Assistência</a>
+        <!-- Painel de navegação mobile (Atualizado com z-50 para impedir sobreposições) -->
+        <div id="mobileMenu" class="md:hidden hidden absolute top-full left-0 w-full bg-white border-b border-[#e2dcce] shadow-xl flex-col p-3 gap-1 z-50">
+            <a href="#" onclick="switchTab('inicio'); return false;" id="mob-nav-inicio" class="mob-nav-btn px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Início</a>
+            <a href="#" onclick="switchTab('dashboard'); return false;" id="mob-nav-dashboard" class="mob-nav-btn px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Dashboard</a>
+            <a href="#" onclick="switchTab('assistencia'); return false;" id="mob-nav-assistencia" class="mob-nav-btn px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Assistência</a>
         </div>
     </header>
 
-    <main class="flex-1 pt-28 pb-16 px-6 max-w-7xl mx-auto w-full flex flex-col justify-center">
+    <main class="flex-1 pt-24 md:pt-28 pb-12 md:pb-16 px-4 sm:px-6 max-w-7xl mx-auto w-full flex flex-col justify-center">
 
         <!-- ================= ABAS: INÍCIO ================= -->
         <section id="tab-inicio" class="tab-content flex flex-col items-center">
 
             <!-- Hero / Branding Segment -->
-            <div class="relative text-center max-w-4xl mx-auto mb-16">
+            <div class="relative text-center max-w-4xl mx-auto mb-12 sm:mb-16">
                 <div class="hero-glow" aria-hidden="true"></div>
 
                 <!-- Badge Superior Minimalista -->
-                <div class="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 font-semibold text-xs uppercase tracking-widest shadow-sm" style="--reveal-delay:0ms; background-color: #ffffff; border: 1.5px solid var(--brand-sage); color: var(--brand-teal)">
+                <div class="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-6 font-semibold text-[10px] sm:text-xs uppercase tracking-widest shadow-sm" style="--reveal-delay:0ms; background-color: #ffffff; border: 1.5px solid var(--brand-sage); color: var(--brand-teal)">
                     <i data-lucide="sparkles" class="w-3.5 h-3.5 animate-pulse"></i>
                     Plataforma de gestão empresarial
                 </div>
 
                 <!-- Título Hero -->
-                <h1 class="reveal text-5xl md:text-7xl font-extrabold tracking-tight mb-4 leading-tight" style="--reveal-delay:90ms; color: var(--brand-dark)">
+                <h1 class="reveal text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-4 leading-tight" style="--reveal-delay:90ms; color: var(--brand-dark)">
                     SINAPSE
                 </h1>
 
                 <!-- Subtítulo -->
-                <p class="reveal lede text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mt-4" style="--reveal-delay:170ms; color: var(--text-muted)">
+                <p class="reveal lede text-base md:text-xl max-w-2xl mx-auto leading-relaxed mt-4" style="--reveal-delay:170ms; color: var(--text-muted)">
                     Monitorar e cuidar da saúde mental da sua equipe nunca foi tão fácil. Alie produtividade ao bem-estar através de ferramentas preditivas modernas.
                 </p>
 
                 <!-- Botões de Chamada para Ação (Cadastro e Login) -->
-                <div class="reveal mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center" style="--reveal-delay:250ms">
+                <div class="reveal mt-8 sm:mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center w-full sm:w-auto" style="--reveal-delay:250ms">
                     <button class="w-full sm:w-auto px-8 py-4 rounded-xl text-white font-bold text-base shadow-lg hover:shadow-xl smooth-transition hover:-translate-y-0.5" style="background-color: var(--brand-teal)">
                         CADASTRAR
                     </button>
@@ -282,9 +283,9 @@
             </div>
 
             <!-- Três Pilares Baseados no layout do app -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mt-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full mt-4 sm:mt-8">
                 <!-- Card Insights -->
-                <div class="reveal panel-hover bg-white p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:320ms">
+                <div class="reveal panel-hover bg-white p-6 sm:p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:320ms">
                     <div class="w-14 h-14 rounded-2xl mb-5 flex items-center justify-center" style="background-color: rgba(200, 118, 45, 0.12)">
                         <i data-lucide="lightbulb" class="w-7 h-7" style="color: var(--brand-ochre)"></i>
                     </div>
@@ -293,7 +294,7 @@
                 </div>
 
                 <!-- Card Automação / Dashboards -->
-                <div class="reveal panel-hover bg-white p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:400ms">
+                <div class="reveal panel-hover bg-white p-6 sm:p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:400ms">
                     <div class="w-14 h-14 rounded-2xl mb-5 flex items-center justify-center" style="background-color: rgba(4, 135, 104, 0.12)">
                         <i data-lucide="activity" class="w-7 h-7" style="color: var(--brand-teal)"></i>
                     </div>
@@ -302,7 +303,7 @@
                 </div>
 
                 <!-- Card Conectividade -->
-                <div class="reveal panel-hover bg-white p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:480ms">
+                <div class="reveal panel-hover bg-white p-6 sm:p-8 rounded-3xl border border-[#e2dcce] shadow-sm flex flex-col items-center text-center" style="--reveal-delay:480ms">
                     <div class="w-14 h-14 rounded-2xl mb-5 flex items-center justify-center" style="background-color: rgba(203, 83, 41, 0.12)">
                         <i data-lucide="git-merge" class="w-7 h-7" style="color: var(--brand-terracotta)"></i>
                     </div>
@@ -314,18 +315,18 @@
 
         <!-- ================= ABAS: DASHBOARD ================= -->
         <section id="tab-dashboard" class="tab-content hidden flex-col">
-            <div class="reveal mb-8 flex justify-between items-center flex-wrap gap-4" style="--reveal-delay:0ms">
+            <div class="reveal mb-8 flex justify-between items-start sm:items-center flex-col sm:flex-row gap-4" style="--reveal-delay:0ms">
                 <div>
-                    <h2 class="text-3xl font-extrabold" style="color: var(--brand-dark)">Painel de Saúde Organizacional</h2>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold" style="color: var(--brand-dark)">Painel de Saúde Organizacional</h2>
                     <p class="text-sm" style="color: var(--text-muted)">Acompanhamento de engajamento, clima emocional e bem-estar em tempo real.</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5" style="background-color: #ffffff; border: 1px solid var(--border-soft); color: var(--brand-teal)">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center justify-center gap-1.5" style="background-color: #ffffff; border: 1px solid var(--border-soft); color: var(--brand-teal)">
                         <span class="w-2.5 h-2.5 rounded-full animate-ping bg-emerald-500"></span>
                         Análise de Clima Ativa
                     </span>
                     <!-- Botão adicionado para levar ao menu.html -->
-                    <a href="menu.html" class="px-5 py-2.5 rounded-xl text-white font-bold text-sm shadow-md hover:shadow-lg smooth-transition hover:-translate-y-0.5 flex items-center gap-2" style="background-color: var(--brand-teal)">
+                    <a href="menu.html" class="px-5 py-2.5 rounded-xl text-white font-bold text-sm shadow-md hover:shadow-lg smooth-transition hover:-translate-y-0.5 flex items-center justify-center gap-2" style="background-color: var(--brand-teal)">
                         <span>Começar o seu dashboard</span>
                         <i data-lucide="arrow-right" class="w-4.5 h-4.5"></i>
                     </a>
@@ -333,7 +334,7 @@
             </div>
 
             <!-- Grade de Monitoramento de Saúde Mental -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
                 <div class="reveal panel-hover bg-white p-6 rounded-3xl border border-[#e2dcce]" style="--reveal-delay:80ms">
                     <div class="flex justify-between items-start mb-4">
                         <span class="text-xs font-bold tracking-wider uppercase" style="color: var(--text-muted)">Clima de Bem-Estar Geral</span>
@@ -356,7 +357,7 @@
                     </div>
                 </div>
 
-                <div class="reveal panel-hover bg-white p-6 rounded-3xl border border-[#e2dcce]" style="--reveal-delay:240ms">
+                <div class="reveal panel-hover bg-white p-6 rounded-3xl border border-[#e2dcce] sm:col-span-2 lg:col-span-1" style="--reveal-delay:240ms">
                     <div class="flex justify-between items-start mb-4">
                         <span class="text-xs font-bold tracking-wider uppercase" style="color: var(--text-muted)">Níveis Críticos de Estresse (Baixo)</span>
                         <i data-lucide="shield-check" class="w-5 h-5" style="color: var(--brand-terracotta)"></i>
@@ -369,62 +370,62 @@
             </div>
 
             <!-- Gráfico de Exemplo em SVG de Clima Organizacional -->
-            <div class="reveal bg-white p-8 rounded-3xl border border-[#e2dcce] h-[360px] flex flex-col justify-between" style="--reveal-delay:320ms">
+            <div class="reveal bg-white p-4 sm:p-8 rounded-3xl border border-[#e2dcce] h-[300px] sm:h-[360px] flex flex-col justify-between" style="--reveal-delay:320ms">
                 <div class="flex justify-between items-center">
-                    <h4 class="font-bold text-base" style="color: var(--brand-dark)">Evolução da Estabilidade de Clima Emocional</h4>
-                    <span class="text-xs font-bold" style="color: var(--brand-teal)">Estatística Diária</span>
+                    <h4 class="font-bold text-sm sm:text-base" style="color: var(--brand-dark)">Evolução da Estabilidade de Clima Emocional</h4>
+                    <span class="text-[10px] sm:text-xs font-bold" style="color: var(--brand-teal)">Estatística Diária</span>
                 </div>
 
                 <!-- Gráfico de barras semanal -->
-                <div class="flex-1 flex items-end justify-between gap-2 pt-6">
+                <div class="flex-1 flex items-end justify-between gap-1.5 sm:gap-2 pt-6">
                     <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Segunda-feira: 66% de estabilidade emocional">
                         <span class="chart-tooltip">66%</span>
                         <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 140px; border: 1.5px solid var(--border-soft)">
                             <div class="w-full h-2/3 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
                         </div>
-                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Seg</span>
+                        <span class="text-[10px] sm:text-xs font-semibold mt-2" style="color: var(--text-muted)">Seg</span>
                     </div>
                     <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Terça-feira: 78% de estabilidade emocional">
                         <span class="chart-tooltip">78%</span>
                         <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 180px; border: 1.5px solid var(--border-soft)">
                             <div class="w-full h-3/4 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
                         </div>
-                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Ter</span>
+                        <span class="text-[10px] sm:text-xs font-semibold mt-2" style="color: var(--text-muted)">Ter</span>
                     </div>
                     <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Quarta-feira: 71% de estabilidade emocional">
                         <span class="chart-tooltip">71%</span>
                         <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 160px; border: 1.5px solid var(--border-soft)">
                             <div class="w-full h-1/2 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
                         </div>
-                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Qua</span>
+                        <span class="text-[10px] sm:text-xs font-semibold mt-2" style="color: var(--text-muted)">Qua</span>
                     </div>
                     <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Quinta-feira: 92% de estabilidade emocional, o melhor dia da semana">
                         <span class="chart-tooltip">92%</span>
                         <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 220px; border: 1.5px solid var(--border-soft)">
                             <div class="w-full h-[90%] rounded-t-lg smooth-transition" style="background-color: var(--brand-teal)"></div>
                         </div>
-                        <span class="text-xs font-bold mt-2" style="color: var(--brand-teal)">Qui</span>
+                        <span class="text-[10px] sm:text-xs font-bold mt-2" style="color: var(--brand-teal)">Qui</span>
                     </div>
                     <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Sexta-feira: 74% de estabilidade emocional">
                         <span class="chart-tooltip">74%</span>
                         <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 170px; border: 1.5px solid var(--border-soft)">
                             <div class="w-full h-2/3 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
                         </div>
-                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Sex</span>
+                        <span class="text-[10px] sm:text-xs font-semibold mt-2" style="color: var(--text-muted)">Sex</span>
                     </div>
                     <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Sábado: 60% de estabilidade emocional">
                         <span class="chart-tooltip">60%</span>
                         <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 130px; border: 1.5px solid var(--border-soft)">
                             <div class="w-full h-1/3 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
                         </div>
-                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Sáb</span>
+                        <span class="text-[10px] sm:text-xs font-semibold mt-2" style="color: var(--text-muted)">Sáb</span>
                     </div>
                     <div class="flex-1 flex flex-col items-center chart-bar" tabindex="0" aria-label="Domingo: 68% de estabilidade emocional">
                         <span class="chart-tooltip">68%</span>
                         <div class="w-full rounded-t-lg bg-[#faf9f6]" style="height: 150px; border: 1.5px solid var(--border-soft)">
                             <div class="w-full h-1/2 rounded-t-lg smooth-transition" style="background-color: var(--brand-sage)"></div>
                         </div>
-                        <span class="text-xs font-semibold mt-2" style="color: var(--text-muted)">Dom</span>
+                        <span class="text-[10px] sm:text-xs font-semibold mt-2" style="color: var(--text-muted)">Dom</span>
                     </div>
                 </div>
             </div>
@@ -433,12 +434,12 @@
         <!-- ================= ABAS: ASSISTÊNCIA ================= -->
         <section id="tab-assistencia" class="tab-content hidden flex-col">
             <div class="reveal mb-8" style="--reveal-delay:0ms">
-                <h2 class="text-3xl font-extrabold" style="color: var(--brand-dark)">Assistência Sinapse</h2>
+                <h2 class="text-2xl sm:text-3xl font-extrabold" style="color: var(--brand-dark)">Assistência Sinapse</h2>
                 <p class="text-sm" style="color: var(--text-muted)">Precisa de orientações ou mediações para o bem-estar organizacional? Fale com nosso suporte inteligente.</p>
             </div>
 
             <!-- Chat Container -->
-            <div class="reveal bg-white rounded-3xl border border-[#e2dcce] overflow-hidden flex flex-col h-[500px]" style="--reveal-delay:140ms">
+            <div class="reveal bg-white rounded-3xl border border-[#e2dcce] overflow-hidden flex flex-col h-[450px] sm:h-[500px]" style="--reveal-delay:140ms">
                 <!-- Chat Header -->
                 <div class="px-6 py-4 border-b border-[#e2dcce] flex items-center gap-3 bg-[#faf9f6]">
                     <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -449,23 +450,24 @@
                 </div>
 
                 <!-- Chat Messages Body -->
-                <div id="chatBody" class="flex-1 p-6 overflow-y-auto flex flex-col gap-4">
+                <div id="chatBody" class="flex-1 p-4 sm:p-6 overflow-y-auto flex flex-col gap-4">
                     <!-- Mensagem do Assistente -->
-                    <div class="msg-in flex gap-3 max-w-[80%]">
+                    <div class="msg-in flex gap-3 max-w-[90%] sm:max-w-[80%]">
                         <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style="background-color: var(--brand-teal)">
                             <i data-lucide="bot" class="w-4 h-4"></i>
                         </div>
                         <div class="p-4 rounded-2xl bg-[#f6f4ee] rounded-tl-none">
-                            <p class="text-sm" style="color: var(--brand-dark)">Olá! Sou o assistente oficial do SINAPSE. Estou aqui para ajudar você a entender melhor o bem-estar emocional do seu time e traçar planos preventivos contra o esgotamento (Burnout). Como posso ajudar hoje?</p>
+                            <p class="text-sm leading-relaxed" style="color: var(--brand-dark)">Olá! Sou o assistente oficial do SINAPSE. Estou aqui para ajudar você a entender melhor o bem-estar emocional do seu time e traçar planos preventivos contra o esgotamento (Burnout). Como posso ajudar hoje?</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Chat Input Footer -->
-                <div class="p-4 border-t border-[#e2dcce] bg-[#faf9f6] flex gap-3">
-                    <input type="text" id="chatInput" placeholder="Pergunte sobre dicas de bem-estar ou monitoramento..." class="flex-1 px-4 py-3 rounded-xl border border-[#e2dcce] outline-none text-sm focus:border-[#048768] smooth-transition bg-white">
-                    <button onclick="sendMessage()" class="px-5 py-3 rounded-xl text-white font-semibold text-sm flex items-center gap-2 smooth-transition hover:opacity-90" style="background-color: var(--brand-teal)">
-                        <span>Enviar</span>
+                <div class="p-3 sm:p-4 border-t border-[#e2dcce] bg-[#faf9f6] flex gap-2 sm:gap-3">
+                    <!-- Text-base impede o iOS Safari de dar zoom automático na tela -->
+                    <input type="text" id="chatInput" placeholder="Pergunte sobre dicas de bem-estar..." class="flex-1 px-4 py-3 rounded-xl border border-[#e2dcce] outline-none text-base md:text-sm focus:border-[#048768] smooth-transition bg-white">
+                    <button onclick="sendMessage()" class="px-4 sm:px-5 py-3 rounded-xl text-white font-semibold text-sm flex items-center gap-2 smooth-transition hover:opacity-90 shrink-0" style="background-color: var(--brand-teal)">
+                        <span class="hidden sm:inline">Enviar</span>
                         <i data-lucide="send" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -474,9 +476,9 @@
 
     </main>
 
-    <footer class="mt-auto py-8 px-6 border-t border-[#e2dcce] bg-white">
+    <footer class="mt-auto py-8 px-4 sm:px-6 border-t border-[#e2dcce] bg-white">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs font-semibold" style="color: var(--text-muted)">
-            <p>© 2026 COGNITECH. Todos os direitos reservados.</p>
+            <p class="text-center sm:text-left">© 2026 COGNITECH. Todos os direitos reservados.</p>
             <div class="flex gap-6">
                 <a href="#" class="hover:underline">Privacidade</a>
                 <a href="#" class="hover:underline">Termos de Serviço</a>
@@ -489,12 +491,6 @@
         /* ================================================================
            MÓDULO — SynapseNetwork
            Motor de fundo animado em <canvas>, independente e reutilizável.
-           Configurável via atributos data-* no elemento canvas:
-             data-density      → densidade de nós por px² (padrão 0.00009)
-             data-max-distance → distância máxima de conexão entre nós (px)
-             data-speed        → velocidade de deslocamento dos nós
-           Respeita prefers-reduced-motion (desenha um quadro estático).
-           Uso em outra página: new SinapseFX.SynapseNetwork(canvasEl, {...})
            ================================================================ */
         (function () {
             'use strict';
@@ -695,11 +691,15 @@
            ================================================================ */
         let currentTab = 'inicio';
 
+        // Lê a hash da URL ao carregar para redirecionar para a aba correta (vinda de menu.html)
+        const hash = window.location.hash.replace('#', '');
+        const validTabs = ['inicio', 'dashboard', 'assistencia'];
+        if (validTabs.includes(hash)) {
+            currentTab = hash;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // IMPORTANTE: a revelação do conteúdo (.reveal) roda primeiro e isolada
-            // em seu próprio try/catch. Assim, se qualquer outra parte da
-            // inicialização falhar (ex.: CDN de ícones fora do ar), o conteúdo
-            // principal da página nunca fica invisível/travado em opacity:0.
+            // Roda a revelação de conteúdo (.reveal) isolada em try/catch
             try {
                 if ('IntersectionObserver' in window) {
                     const observer = new IntersectionObserver((entries) => {
@@ -719,8 +719,10 @@
                 document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
             }
 
-            // Ícones (Lucide) — se o script externo falhar ao carregar, não deve
-            // travar o restante da inicialização da página.
+            // Ativar a aba padrão ou a aba baseada na âncora da URL
+            switchTab(currentTab);
+
+            // Ícones (Lucide)
             try {
                 if (typeof lucide !== 'undefined') {
                     lucide.createIcons();
@@ -742,13 +744,12 @@
             // Indicador de navegação
             try {
                 updateNavIndicator(currentTab);
-                window.addEventListener('load', () => updateNavIndicator(currentTab));
                 window.addEventListener('resize', () => updateNavIndicator(currentTab));
             } catch (err) {
                 console.error('Falha ao iniciar indicador de navegação:', err);
             }
 
-            // Menu mobile
+            // Menu mobile — Gerenciador de clique limpo e sem propagação
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             if (mobileMenuBtn) {
                 mobileMenuBtn.addEventListener('click', (e) => {
@@ -757,9 +758,13 @@
                 });
             }
 
-            // Clique fora fecha o menu mobile aberto
-            document.addEventListener('click', () => {
-                closeMobileMenu();
+            // Clique fora fecha o menu mobile aberto de forma resiliente
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('mobileMenu');
+                const btn = document.getElementById('mobileMenuBtn');
+                if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+                    closeMobileMenu();
+                }
             });
 
             // Escuta a tecla Enter no input do chat
@@ -810,26 +815,49 @@
         function switchTab(tabId) {
             currentTab = tabId;
 
+            // Esconde todas as abas
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.add('hidden');
                 el.classList.remove('flex');
             });
 
+            // Remove o estilo ativo da navegação desktop
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.style.color = 'var(--text-muted)';
                 btn.classList.remove('active-tab');
             });
 
+            // Remove o estilo ativo do menu mobile
+            document.querySelectorAll('.mob-nav-btn').forEach(btn => {
+                btn.classList.remove('active-tab-mobile');
+                btn.style.color = 'var(--text-muted)';
+            });
+
+            // Exibe a aba atual
             const targetTab = document.getElementById(`tab-${tabId}`);
             if (targetTab) {
                 targetTab.classList.remove('hidden');
                 targetTab.classList.add('flex');
             }
 
+            // Destaca no menu desktop
             const targetNav = document.getElementById(`nav-${tabId}`);
             if (targetNav) {
                 targetNav.style.color = 'var(--brand-teal)';
                 targetNav.classList.add('active-tab');
+            }
+
+            // Destaca no menu mobile
+            const targetMobNav = document.getElementById(`mob-nav-${tabId}`);
+            if (targetMobNav) {
+                targetMobNav.classList.add('active-tab-mobile');
+            }
+
+            // Atualiza a hash silenciosamente no navegador sem recarregar a página
+            if (history.replaceState) {
+                history.replaceState(null, null, '#' + tabId);
+            } else {
+                window.location.hash = '#' + tabId;
             }
 
             updateNavIndicator(tabId);
@@ -891,7 +919,7 @@
             input.value = '';
 
             const userMsg = document.createElement('div');
-            userMsg.className = 'msg-in flex gap-3 max-w-[80%] ml-auto justify-end';
+            userMsg.className = 'msg-in flex gap-3 max-w-[90%] sm:max-w-[80%] ml-auto justify-end';
             userMsg.innerHTML = `
                 <div class="p-4 rounded-2xl rounded-tr-none text-white text-sm" style="background-color: var(--brand-teal)">
                     <p>${userText}</p>
@@ -901,7 +929,7 @@
             chatBody.scrollTop = chatBody.scrollHeight;
 
             const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'msg-in flex gap-3 max-w-[80%] items-center text-sm text-gray-400';
+            typingIndicator.className = 'msg-in flex gap-3 max-w-[90%] sm:max-w-[80%] items-center text-sm text-gray-400';
             typingIndicator.id = 'typing-indicator';
             typingIndicator.innerHTML = `
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 animate-pulse" style="background-color: var(--brand-sage)">
@@ -924,7 +952,7 @@
                 typingIndicator.remove();
 
                 const assistantMsg = document.createElement('div');
-                assistantMsg.className = 'msg-in flex gap-3 max-w-[80%]';
+                assistantMsg.className = 'msg-in flex gap-3 max-w-[90%] sm:max-w-[80%]';
                 assistantMsg.innerHTML = `
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0" style="background-color: var(--brand-teal)">
                         <i data-lucide="bot" class="w-4 h-4"></i>

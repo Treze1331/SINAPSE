@@ -126,6 +126,10 @@
             transition: left var(--dur-base) var(--ease-out-expo), width var(--dur-base) var(--ease-out-expo);
         }
 
+        /* Ajuste do Menu Mobile para suportar rotação de SVG gerado pelo Lucide */
+        #mobileMenuBtn i, #mobileMenuBtn svg { transition: transform var(--dur-base) var(--ease-out-expo); }
+        #mobileMenuBtn[aria-expanded="true"] i, #mobileMenuBtn[aria-expanded="true"] svg { transform: rotate(90deg); }
+
         /* Estilo da equipe ativa */
         .team-active {
             background-color: white;
@@ -144,14 +148,14 @@
         <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
 
             <!-- Logo Oficial "sources/logo3.png" (Redireciona para index) -->
-            <a href="index.html" class="flex items-center gap-3 text-2xl font-extrabold tracking-tight hover:opacity-90 smooth-transition">
+            <a href="index.html#inicio" class="flex items-center gap-3 text-2xl font-extrabold tracking-tight hover:opacity-90 smooth-transition">
                 <img src="sources/logo3.png" alt="SINAPSE Logo" class="h-10 w-auto object-contain">
                 <span class="tracking-widest font-extrabold" style="color: var(--brand-dark)">SINAPSE</span>
             </a>
 
             <!-- Menu de Navegação Central (Adaptado para retornar ao Index e suas respectivas abas) -->
             <nav id="desktopNav" class="hidden md:flex items-center gap-10">
-                <a href="index.html" class="nav-btn font-semibold text-sm pb-1 smooth-transition hover:text-[var(--brand-teal)]" style="color: var(--text-muted)">Início</a>
+                <a href="index.html#inicio" class="nav-btn font-semibold text-sm pb-1 smooth-transition hover:text-[var(--brand-teal)]" style="color: var(--text-muted)">Início</a>
                 <!-- Link ativo para indicar a página de gerenciamento atual -->
                 <a href="#" class="nav-btn font-semibold text-sm pb-1 smooth-transition active-tab" style="color: var(--brand-teal)">Minhas Equipes</a>
                 <span id="navIndicator" aria-hidden="true"></span>
@@ -165,11 +169,11 @@
             </div>
         </div>
 
-        <!-- Painel de navegação mobile -->
-        <div id="mobileMenu" class="md:hidden hidden absolute top-full left-0 w-full bg-white border-b border-[#e2dcce] shadow-xl flex-col p-3 gap-1">
-            <a href="index.html" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Início</a>
-            <a href="index.html" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Dashboard</a>
-            <a href="index.html" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Assistência</a>
+        <!-- Painel de navegação mobile (Atualizado com z-50 e links corretos baseados em hashes) -->
+        <div id="mobileMenu" class="md:hidden hidden absolute top-full left-0 w-full bg-white border-b border-[#e2dcce] shadow-xl flex-col p-3 gap-1 z-50">
+            <a href="index.html#inicio" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Início</a>
+            <a href="index.html#dashboard" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Dashboard</a>
+            <a href="index.html#assistencia" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition hover:bg-[#f6f4ee]" style="color: var(--text-muted)">Assistência</a>
             <a href="#" class="px-4 py-3 rounded-xl font-semibold text-sm smooth-transition bg-[#f6f4ee]" style="color: var(--brand-teal)">Minhas Equipes</a>
         </div>
     </header>
@@ -511,33 +515,21 @@
             window.SinapseFX = { SynapseNetwork };
         })();
 
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Inicializa ícones Lucide imediatamente
             lucide.createIcons();
 
-            const user = await SinapseAuth.requireAuth();
-            if (!user) return;
-
-            SinapseAuth.updateUserMenu(user);
-
-            const welcomeTitle = document.querySelector('main h2');
-            if (welcomeTitle && user.organizationName) {
-                welcomeTitle.textContent = user.organizationName;
-            }
-
-            const dropdownHeader = document.querySelector('#loginDropdown .text-sm.font-bold.truncate');
-            if (dropdownHeader) dropdownHeader.textContent = user.fullName || user.email;
-
-            // Inicialização do fundo animado de sinapses
+            // 2. Inicialização segura e síncrona do fundo animado de sinapses
             const synapseCanvas = document.getElementById('synapse-canvas');
             if (synapseCanvas && synapseCanvas.getContext && window.SinapseFX) {
                 window.sinapseNetwork = new SinapseFX.SynapseNetwork(synapseCanvas);
             }
 
-            // Atualização do Indicador de Navegação Superior
+            // 3. Configurações de UI e Indicadores (Síncronos, nunca bloqueiam)
             updateNavIndicator();
             window.addEventListener('resize', updateNavIndicator);
 
-            // Controle do Menu Mobile[cite: 5]
+            // 4. Controle do Menu Mobile (Registrado imediatamente para garantir funcionamento)[cite: 1, 2]
             const mobileMenuBtn = document.getElementById('mobileMenuBtn');
             if (mobileMenuBtn) {
                 mobileMenuBtn.addEventListener('click', (e) => {
@@ -546,7 +538,15 @@
                 });
             }
 
-            // Lógica do Menu Dropdown de Login[cite: 6]
+            // 5. UX: Fechar o menu mobile ao clicar em qualquer link[cite: 1, 2]
+            const mobileLinks = document.querySelectorAll('#mobileMenu a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    closeMobileMenu();
+                });
+            });
+
+            // 6. Lógica do Menu Dropdown de Login
             const loginTrigger = document.getElementById('loginTrigger');
             const loginDropdown = document.getElementById('loginDropdown');
 
@@ -566,10 +566,15 @@
                 });
             }
 
-            // Clique fora fecha qualquer menu que esteja aberto[cite: 6]
-            document.addEventListener('click', () => {
+            // 7. Clique fora fecha qualquer menu ou dropdown de forma robusta[cite: 1, 2]
+            document.addEventListener('click', (e) => {
+                const menu = document.getElementById('mobileMenu');
+                const btn = document.getElementById('mobileMenuBtn');
+                
+                if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+                    closeMobileMenu();
+                }
                 closeDropdown();
-                closeMobileMenu();
             });
 
             function closeDropdown() {
@@ -579,9 +584,12 @@
                     setTimeout(() => loginDropdown.classList.add('hidden'), 200);
                 }
             }
+
+            // 8. Inicializa a autenticação de forma ASSÍNCRONA em segundo plano (Não bloqueante)[cite: 1, 2]
+            initAuth();
         });
 
-        // Alternadores robustos e centralizados de visibilidade dos menus[cite: 6]
+        // Alternadores robustos e centralizados de visibilidade dos menus
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             const btn = document.getElementById('mobileMenuBtn');
@@ -615,6 +623,31 @@
             const linkRect = activeLink.getBoundingClientRect();
             indicator.style.left = (linkRect.left - navRect.left) + 'px';
             indicator.style.width = linkRect.width + 'px';
+        }
+
+        // Função isolada para autenticação assíncrona (Previne crashes fatais no carregamento)[cite: 1, 2]
+        async function initAuth() {
+            if (typeof SinapseAuth === 'undefined') {
+                console.warn('SinapseAuth não pôde ser carregado. Verifique a presença do arquivo "js/auth-client.js".');
+                return;
+            }
+
+            try {
+                const user = await SinapseAuth.requireAuth();
+                if (!user) return;
+
+                SinapseAuth.updateUserMenu(user);
+
+                const welcomeTitle = document.querySelector('main h2');
+                if (welcomeTitle && user.organizationName) {
+                    welcomeTitle.textContent = user.organizationName;
+                }
+
+                const dropdownHeader = document.querySelector('#loginDropdown .text-sm.font-bold.truncate');
+                if (dropdownHeader) dropdownHeader.textContent = user.fullName || user.email;
+            } catch (error) {
+                console.error('Erro durante a validação de autenticação do usuário:', error);
+            }
         }
     </script>
 </body>
